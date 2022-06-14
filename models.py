@@ -17,12 +17,8 @@ class Vector:
         :param center: (Vector) Center of rotation
         :param angle: (float) Rotation angle
         """
-        rx = (self.x - center.x) * cos(angle) \
-            - (self.y - center.y) * sin(angle) \
-            + center.x
-        ry = (self.x - center.x) * sin(angle) \
-            + (self.y - center.y) * cos(angle) \
-            + center.y
+        rx = (self.x - center.x) * cos(angle) - (self.y - center.y) * sin(angle) + center.x
+        ry = (self.x - center.x) * sin(angle) + (self.y - center.y) * cos(angle) + center.y
         if rotate_self:
             self.x = rx
             self.y = ry
