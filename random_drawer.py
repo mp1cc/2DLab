@@ -1,7 +1,7 @@
 import pygame
 import sys
 from pygame.locals import *
-from models import Vector, Segment, Color
+from core.models import Vector, Segment, Color
 
 HEIGHT = 1000
 WIDTH = 1000
@@ -11,7 +11,7 @@ center = Vector(WIDTH/2, HEIGHT/2)
 
 pygame.init()
 DISPLAYSURF = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('2D Lab')
+pygame.display.set_caption('Random Drawer')
 
 segment = Segment(45, start_point=Vector(WIDTH / 2, HEIGHT / 2))
 segment_2 = segment.add_segment(60)[0]
