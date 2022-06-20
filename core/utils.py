@@ -12,4 +12,9 @@ class Color:
         :return: (tuple(int)) (RED, GREEN, BLUE)
         """
         seed(time()*10000000)
-        return [(random() * 1000) % 255 for v in range(3)]
+        return [int((random() * 1000) % 255) for v in range(3)]
+
+    @staticmethod
+    def fade_to_black(color, rate):
+        for i in range(len(color)):
+            color[i] -= color[i] / rate
