@@ -3,11 +3,16 @@ from math import cos, sin, sqrt, pow
 
 class Vector:
 
-    def __init__(self, x, y):
+    def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
 
-    def rotate(self, center, angle, rotate_self=False):
+    def rotate(
+            self,
+            center: "Vector",
+            angle: float,
+            rotate_self: bool = False
+    ) -> ["Vector", None]:
         """ Apply rotation around center vector
         :param rotate_self: (bool)
             - True: Rotate the vector itself
@@ -15,13 +20,35 @@ class Vector:
         :param center: (Vector) Center of rotation
         :param angle: (float) Rotation angle
         """
-        rx = (self.x - center.x) * cos(angle) - (self.y - center.y) * sin(angle) + center.x
-        ry = (self.x - center.x) * sin(angle) + (self.y - center.y) * cos(angle) + center.y
+        rx = self._calculate_x_rotation(center, angle)
+        ry = self._calculate_y_rotation(center, angle)
         if rotate_self:
             self.x = rx
             self.y = ry
         else:
             return Vector(rx, ry)
+
+    def _calculate_x_rotation(
+            self,
+            center: "Vector",
+            angle: float
+    ) -> int:
+        return int(
+            (self.x - center.x) * cos(angle) -
+            (self.y - center.y) * sin(angle) +
+            center.x
+        )
+
+    def _calculate_y_rotation(
+            self,
+            center: "Vector",
+            angle: float
+    ) -> int:
+        return int(
+            (self.x - center.x) * sin(angle) +
+            (self.y - center.y) * cos(angle) +
+            center.y
+        )
 
     def copy(self):
         return Vector(self.x, self.y)
@@ -46,5 +73,5 @@ class Vector:
         return self.x, self.y
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
-
+        return int(self.x) == int(other.x) and \
+            int(self.y) == int(other.y)

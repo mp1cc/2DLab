@@ -1,4 +1,4 @@
-from core.physics.vector import Vector
+from core.physics.Vector import Vector
 
 
 class Segment:
