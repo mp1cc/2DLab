@@ -1,95 +1,86 @@
 import random
 
-import math
-
-
-class Neuron:
-    def __init__(self, weights: list[float], bias: float):
-        self.weights = weights
-        self.bias = bias
-        self.learning_rate: float = 0.1
-
-    def activate(self, inputs: list[float]) -> float:
-        weighted_sum = sum([inputs[i] * self.weights[i] for i in range(len(inputs))])
-        weighted_sum += self.bias
-        output = self._sigmoid(weighted_sum)
-
-        return output
-
-    def _sigmoid(self, x: float) -> float:
-        return 1 / (1 + math.exp(-x))
-
-    def error(self, output: float, target: float) -> float:
-        error = output - target
-        return error
-
-    def backpropagate(self, inputs: list[float], error: float) -> None:
-        weights_gradient: list[float] = [inputs[i] * error for i in range(len(inputs))]
-        bias_gradient: float = error
-
-        for i in range(len(self.weights)):
-            self.weights[i] -= self.learning_rate * weights_gradient[i]
-        self.bias -= self.learning_rate * bias_gradient
+from core.entities.Neuron import Neuron
 
 
 class Brain:
-    def __init__(self, input_size: int, output_size: int, hidden_sizes: tuple[int] | list[int]):
+    def __init__(self, input_size, output_size, hidden_sizes):
         self.input_size = input_size
         self.output_size = output_size
         self.hidden_sizes = hidden_sizes
-        self.input_layer = None
-        self.hidden_layers = None
-        self.output_layer = None
-
-        self._build_brain()
-
-    def _build_neuron_layer(self, input_size: int, size: int) -> list[Neuron]:
-        layer: list = []
-        for i in range(size):
-            layer.append(
-                Neuron(
-                    weights=[random.random() for i in range(input_size)],
-                    bias=random.random()
-                )
+        self.input_layer = self._build_neuron_layer(input_size, input_size)
+        self.hidden_layers = []
+        previous_size = input_size
+        for layer_size in hidden_sizes:
+            self.hidden_layers.append(
+                self._build_neuron_layer(previous_size, layer_size)
             )
-        return layer
+            previous_size = layer_size
+        self.output_layer = self._build_neuron_layer(hidden_sizes[-1], output_size)
 
-    def _build_brain(self) -> None:
-        self.input_layer = self._build_neuron_layer(self.input_size, self.input_size)
-        hidden_layers = []
-        for i in range(len(self.hidden_sizes)):
-            previous_size = self.input_size if i == 0 else self.hidden_sizes[i - 1]
-            hidden_layers.append(
-                self._build_neuron_layer(previous_size, self.hidden_sizes[i])
-            )
-        self.hidden_layers = hidden_layers
-        self.output_layer = self._build_neuron_layer(self.hidden_sizes[-1], self.output_size)
+    @staticmethod
+    def _build_neuron_layer(input_size, size):
+        return [
+            Neuron(
+                weights=[random.uniform(-1, 1) for _ in range(input_size)],
+                bias=random.uniform(-1, 1)
+            ) for _ in range(size)
+        ]
 
-    def _activate_layer(self, layer: list[Neuron], inputs: list[float]) -> list[float]:
-        outputs: list = []
-        for i in range(len(layer)):
-            neuron: Neuron = layer[i]
-            outputs.append(neuron.activate(inputs))
-        return outputs
+    def forward_pass(self, inputs: list[float]) -> list[float]:
+        layer_input = inputs
+        for layer in [self.input_layer] + self.hidden_layers:
+            layer_output = [neuron.activate(layer_input) for neuron in layer]
+            layer_input = layer_output
+        return [neuron.activate(layer_input) for neuron in self.output_layer]
 
-    def process(self, inputs: list[float]) -> list[float]:
-        if len(inputs) != self.input_size:
-            raise ValueError("The number of inputs does not match the size of the first neuron layer")
-        outputs: list = self._activate_layer(self.input_layer, inputs)
+    def train(self, inputs: list[float], expected_output: list[float]):
+        # Forward pass
+        outputs = self.forward_pass(inputs)
 
-        for layer in self.hidden_layers:
-            outputs = self._activate_layer(layer, outputs)
+        # Compute the error
+        error = [o - e for o, e in zip(outputs, expected_output)]
 
-        outputs = self._activate_layer(self.output_layer, outputs)
+        # Backward pass
+        for i in reversed(range(len(self.hidden_layers) + 1)):
+            layer = self.output_layer if i == len(self.hidden_layers) else self.hidden_layers[i]
+            next_layer = None if i == len(self.hidden_layers) else (
+                self.output_layer if i == len(self.hidden_layers) - 1 else self.hidden_layers[i + 1])
 
-        return outputs
+            for j, neuron in enumerate(layer):
+                # calculate the error for this neuron
+                neuron_error = error[j] if next_layer is None else sum(
+                    n.weights[j] * error[k] for k, n in enumerate(next_layer))
+                # backpropagate the error
+                neuron.backpropagate(neuron_error)
+
+            # update the error for the next iteration
+            error = [sum(neuron.weights[k] * error[k] for k in range(len(error))) for neuron in layer]
 
 
+# simple xor test for a basic brain
 if __name__ == '__main__':
-    brain1 = Brain(input_size=3, output_size=2, hidden_sizes=[4, 5, 6])
+    xor_inputs = [[0, 0], [0, 1], [1, 0], [1, 1]]
+    xor_outputs = [[0], [1], [1], [0]]
 
-    inputs1 = [0.3, 0.5, 0.6]
+    brain = Brain(2, 1, [3, 2])
 
-    outputs1 = brain1.process(inputs1)
+    epochs = 50000
 
-    print(outputs1)
+    # Train the network
+    for epoch in range(epochs):
+        total_error = 0
+        for i in range(len(xor_inputs)):
+            brain.train(xor_inputs[i], xor_outputs[i])
+            output = brain.forward_pass(xor_inputs[i])
+            error = sum((o - xo) ** 2 for o, xo in zip(output, xor_outputs[i]))
+            total_error += error
+
+        if epoch % 1000 == 0:
+            print(f'Epoch: {epoch}, Error: {total_error:.6f}')
+
+    # Evaluate the network
+    for i in range(len(xor_inputs)):
+        print(
+            f'Input: {xor_inputs[i]}, Output: {brain.forward_pass(xor_inputs[i])[0]:.6f}, Expected: {xor_outputs[i][0]}'
+        )

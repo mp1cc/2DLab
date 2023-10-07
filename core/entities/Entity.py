@@ -10,7 +10,7 @@ class Entity(RealObject):
             self,
             position: Vector,
             reality: Reality,
-            max_energy: float = 100.0
+            max_energy: float = 1.0
     ):
         super().__init__(position, reality)
         self.max_energy: float = max_energy
@@ -28,7 +28,6 @@ class Entity(RealObject):
     def _move(self, direction: Vector) -> None:
         if self.energy:
             self.acceleration += direction.normalize()
-            self.energy -= 1.0
 
     def _rotate(self, radians: float) -> None:
         if radians > math.pi:
@@ -49,4 +48,3 @@ class Entity(RealObject):
 
     def update(self) -> None:
         self._update_position()
-        self.energy -= 1.0

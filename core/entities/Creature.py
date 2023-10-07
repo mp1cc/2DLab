@@ -34,5 +34,5 @@ class Creature(Entity):
                 self.energy
             ]
             brain_output = self.brain.process(brain_input)
-            self.energy -= 1.0
+            self.energy -= 0.1
 
