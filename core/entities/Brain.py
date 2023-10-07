@@ -9,14 +9,18 @@ class Brain:
         self.output_size = output_size
         self.hidden_sizes = hidden_sizes
         self.input_layer = self._build_neuron_layer(input_size, input_size)
-        self.hidden_layers = []
+        self.hidden_layers = self._build_hidden_layers(input_size, hidden_sizes)
+        self.output_layer = self._build_neuron_layer(hidden_sizes[-1], output_size)
+
+    def _build_hidden_layers(self, input_size: int, hidden_sizes: list[int]):
+        hidden_layers = []
         previous_size = input_size
         for layer_size in hidden_sizes:
-            self.hidden_layers.append(
+            hidden_layers.append(
                 self._build_neuron_layer(previous_size, layer_size)
             )
             previous_size = layer_size
-        self.output_layer = self._build_neuron_layer(hidden_sizes[-1], output_size)
+        return hidden_layers
 
     @staticmethod
     def _build_neuron_layer(input_size, size):
@@ -37,25 +41,39 @@ class Brain:
     def train(self, inputs: list[float], expected_output: list[float]):
         # Forward pass
         outputs = self.forward_pass(inputs)
+        assert len(outputs) == len(expected_output), "Output and expected output size mismatch."
 
-        # Compute the error
+        # Compute the initial error
         error = [o - e for o, e in zip(outputs, expected_output)]
 
         # Backward pass
         for i in reversed(range(len(self.hidden_layers) + 1)):
             layer = self.output_layer if i == len(self.hidden_layers) else self.hidden_layers[i]
-            next_layer = None if i == len(self.hidden_layers) else (
-                self.output_layer if i == len(self.hidden_layers) - 1 else self.hidden_layers[i + 1])
 
+            # Backpropagate the error for each neuron in the current layer
             for j, neuron in enumerate(layer):
-                # calculate the error for this neuron
-                neuron_error = error[j] if next_layer is None else sum(
-                    n.weights[j] * error[k] for k, n in enumerate(next_layer))
-                # backpropagate the error
-                neuron.backpropagate(neuron_error)
+                neuron.backpropagate(error[j])
 
-            # update the error for the next iteration
-            error = [sum(neuron.weights[k] * error[k] for k in range(len(error))) for neuron in layer]
+            # If this is the output layer, no need to compute error for further layers
+            if i == 0:
+                break
+
+            # Compute the error for the next layer in the backward pass
+            next_layer = layer
+            layer = self.hidden_layers[i - 1] if i != 0 else self.input_layer
+
+            # Update error for each neuron in the current layer
+            error = [
+                sum(next_neuron.weights[j] * error[k] for k, next_neuron in enumerate(next_layer))
+                for j, neuron in enumerate(layer)
+            ]
+
+            # Validate: Ensure error is not empty and has correct size
+            assert error, "Error is empty."
+            assert len(error) == len(layer), (
+                f"Error size does not match layer size. "
+                f"Error size: {len(error)}, Layer size: {len(layer)}"
+            )
 
 
 # simple xor test for a basic brain
@@ -63,7 +81,7 @@ if __name__ == '__main__':
     xor_inputs = [[0, 0], [0, 1], [1, 0], [1, 1]]
     xor_outputs = [[0], [1], [1], [0]]
 
-    brain = Brain(2, 1, [3, 2])
+    brain = Brain(2, 1, [4, 3])
 
     epochs = 50000
 
