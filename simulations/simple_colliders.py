@@ -2,9 +2,9 @@ import pygame
 from pygame.locals import *
 
 from core.physics.rigid_body import SquareBody
-from core.physics.vector import Vector
+from core.physics.Vector import Vector
 from core.utils import Color
-from simulations.simulation import Simulation
+from core.engine.simulation import Simulation
 
 
 class SimpleColliders(Simulation):
