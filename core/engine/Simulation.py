@@ -2,7 +2,6 @@ import numpy
 import pygame
 import sys
 from pygame.locals import *
-from core.utils import Color
 from abc import ABC
 
 
@@ -56,8 +55,6 @@ class Simulation(ABC):
 
     def run(self):
         while True:
-            self.display.fill(Color.BLACK)
-            self.surface.fill(Color.BLACK)
             self.display.blit(self.surface, self.SCREEN_CENTER)
             self.update()
             self.check_exit()

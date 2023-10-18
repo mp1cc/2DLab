@@ -5,6 +5,8 @@ from random import seed, random
 class Color:
     WHITE: tuple[int] = 255, 255, 255
     BLACK: tuple[int] = 0, 0, 0
+    GREEN: tuple[int] = 0, 255, 0
+    RED: tuple[int] = 255, 0, 0
 
     @staticmethod
     def random_color() -> list[int]:

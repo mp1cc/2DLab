@@ -1,9 +1,6 @@
 from core.physics import Vector
-from core.engine import Reality
 
 
 class RealObject:
-
-    def __init__(self, position: Vector, reality: Reality):
+    def __init__(self, position: Vector):
         self.position = position
-        self.reality = reality

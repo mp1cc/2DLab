@@ -2,14 +2,14 @@ from pygame.locals import *
 
 import pygame
 from core.physics.Vector import Vector
-from core.shapes import Segment
-from core.utils import Color
-from core.engine.simulation import Simulation
+from core.Shapes import Segment
+from core.Utils import Color
+from core.engine.Simulation import Simulation
 
 
 class RandomDrawer(Simulation):
 
-    FPS = 250
+    FPS = 144
     center = Vector(int(Simulation.WIDTH / 2), int(Simulation.HEIGHT / 2))
     segment = Segment(90, start_point=center)
     segment_2 = segment.add_segment(90)[0]
@@ -24,11 +24,13 @@ class RandomDrawer(Simulation):
     counter = 0
 
     def update(self):
-        self.segments[1].rotate(self.rotation_rate)
-        self.segments[0].rotate(self.rotation_rate+0.00012)
-        self.segments[2].rotate(self.rotation_rate+0.00023)
-        self.segments[3].rotate(self.rotation_rate+0.00034)
-        self.segments[4].rotate(self.rotation_rate+0.00045)
+        self.surface.fill(Color.BLACK)
+        self.display.fill(Color.BLACK)
+        self.segments[1].rotate(self.rotation_rate*2)
+        self.segments[0].rotate(self.rotation_rate+0.01)
+        self.segments[2].rotate(self.rotation_rate+0.03)
+        self.segments[3].rotate(self.rotation_rate+0.04)
+        self.segments[4].rotate(self.rotation_rate+0.01)
 
         for segment in self.segments:
             clr, a, b = segment.get_drawing_data()
@@ -46,10 +48,10 @@ class RandomDrawer(Simulation):
             self.counter = 0
 
         for point in self.points_to_fade:
-            pygame.draw.circle(self.display, color, point.get_cords(), 1)
+            pygame.draw.circle(self.display, color, point.get_cords(), 2)
             Color.fade_to_black(color, 2000)
-            point.x += 0.12
-            point.y += 0.212
+            #point.x += 0.012
+            #point.y += 0.0212
             # point.rotate(self.center, 0.006, True)
 
         self.counter += 1

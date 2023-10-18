@@ -1,5 +1,4 @@
 from core.physics import Vector
-from core.engine import Reality
 from core.entities.RealObject import RealObject
 import math
 
@@ -8,13 +7,9 @@ class Entity(RealObject):
 
     def __init__(
             self,
-            position: Vector,
-            reality: Reality,
-            max_energy: float = 1.0
+            position: Vector
     ):
-        super().__init__(position, reality)
-        self.max_energy: float = max_energy
-        self.energy: float = max_energy
+        super().__init__(position)
         self.velocity: Vector = Vector(0, 0)
         self.acceleration: Vector = Vector(0, 0)
         self.rotation: float = 0.0
@@ -26,15 +21,14 @@ class Entity(RealObject):
         self.acceleration = self.acceleration.multiply(self.friction, self.friction)
 
     def _move(self, direction: Vector) -> None:
-        if self.energy:
-            self.acceleration += direction.normalize()
+        self.acceleration += direction.normalize()
 
     def _rotate(self, radians: float) -> None:
         if radians > math.pi:
             radians = radians % math.pi
         self.rotation = radians
 
-    def _ray_cast(self, distance: int) -> list[Vector]:
+    def ray_cast(self, distance: int) -> list[Vector]:
         ray: list = []
         for i in range(distance):
             cursor: Vector = self.position + Vector(i + 1, 0)
